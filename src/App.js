@@ -1,16 +1,31 @@
 import React, { useState } from 'react';
 import './App.css';
+import axios from 'axios';
 
 function App() {
   const [location, setLocation] = useState('');
   const [weatherData, setWeatherData] = useState(null);
 
-  const getWeather = () => {
+  const getWeather = async() => {
     if (location) {
-      fetch(`https://api.weatherapi.com/v1/current.json?key=d7792c4b0e7a4204a9e91703240107&q=${location}`)
-        .then(res => res.json())
-        .then(data => setWeatherData(data))
-        .catch(err => console.error(err));
+
+      const response = await fetch("http://localhost:5000/weather", {
+        method: "POST",
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ location: `${location}` }),
+      });
+      
+      if (!response.ok) {
+        const message = `An error has occured: ${response.status}`;
+        throw new Error(message);
+      }
+      
+      const json = await response.json();
+      setWeatherData(json)
+      // console.log(weatherData)
+      
     } else {
       alert('Please enter a location.');
     }
@@ -30,13 +45,13 @@ function App() {
       <div id="weather-result">
         {weatherData && (
           <>
-            <h2>Weather in {weatherData.location.name}</h2>
-            <p>Temperature: {weatherData.current.temp_c}°C</p>
-            <p>Condition: {weatherData.current.condition.text}</p>
-            <p>Is_day: {weatherData.current.is_day}</p>
-            <img src={weatherData.current.condition.icon} alt={weatherData.current.condition.text} />
-          </>
-        )}
+          {/* <p>{weatherData}</p> */}
+            <h2>Weather in {weatherData.location}</h2>
+            <p>Temperature: {weatherData.temperature}°C</p>
+            <p>Condition: {weatherData.condition}</p>
+            {/* <p>Is_day: {weatherData.current.is_day}</p> */}
+            <img src={weatherData.icon} alt={weatherData.condition} />
+          </>)}
       </div>
     </div>
   );
